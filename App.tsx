@@ -6,29 +6,39 @@
  */
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet, SafeAreaView } from 'react-native';
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
 (global as any).Buffer = Buffer;
 import process from 'process';
 (global as any).process = process;
+import { getClient, endClient } from './src/mqtt/client';
+import { useEffect } from 'react';
+import { HomeScreen } from './src/screens/HomeScreen';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  useEffect(() => {
+    getClient();
+    return () => endClient();
+  }, [])
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
+    <GestureHandlerRootView style={styles.GestureContainer}>
+      <SafeAreaView style={styles.SafeViewContainer}>
+        <HomeScreen />
+      </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  GestureContainer: {
     flex: 1,
+  },
+  SafeViewContainer: {
+    flex: 1,
+    backgroundColor: '#0D1B2A',
   },
 });
 

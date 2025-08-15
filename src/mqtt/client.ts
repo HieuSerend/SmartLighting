@@ -5,10 +5,12 @@ import { useLightStore } from '../store/lightStored';
 let client: MqttClient | null = null;
 
 export function getClient() {
-  if (client) return client;
+  if (client) return client; // Trả về client nếu đã tồn tại
   const options: IClientOptions = {
+    username: 'HieeuSerend',
+    password: 'Matkhauhivemqcloud1',
     clientId: 'rn-' + Math.random().toString(16).slice(2),
-    keepalive: 60,
+    keepalive: 60, 
     reconnectPeriod: 1500,
     clean: true,
     // will: { topic: topic.state, payload: JSON.stringify({ online:false }), retain: true }
