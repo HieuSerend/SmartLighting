@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Switch } from 'react-native';
-import { useLightStore } from '../store/lightStored';
+import { useLightStore } from '../../store/lightStored';
 
-export default function PowerSwitch() {
+export function PowerSwitch() {
     const on = useLightStore((state) => state.on);
     const setOn = useLightStore((state) => state.setOn);
 

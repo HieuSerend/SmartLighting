@@ -7,14 +7,14 @@ export interface LightState {
   on: boolean;
   mode: LightMode;
   brightness: number;      // 0-100
-  cct: number;             // 2700-6500
-  color: { h: number; s: number; v: number }; // HSV
+  colorTemperature: number;             // 2700-6500
+  colorHSV: { h: number; s: number; v: number }; // HSV
 
   // actions
   hydrateFromDevice: (s: Partial<LightState>) => void;
   setOn: (v: boolean, publish?: boolean) => void;
   setBrightness: (v: number, publish?: boolean) => void;
-  setCct: (k: number, publish?: boolean) => void;
+  setColorTemperature: (k: number, publish?: boolean) => void;
   setColorHSV: (h:number,s:number,v:number, publish?: boolean) => void;
   setMode: (m: LightMode, publish?: boolean) => void;
 }
@@ -26,8 +26,8 @@ export const useLightStore = create<LightState>((set,get)=>({
   on: true,
   mode: 'white',
   brightness: 80,
-  cct: 4000,
-  color: { h: 20, s: 0.5, v: 1 },
+  colorTemperature: 4000,
+  colorHSV: { h: 20, s: 0.5, v: 1 },
 
   hydrateFromDevice: (s) => set((st) => ({ ...st, ...s })),
 
@@ -42,16 +42,16 @@ export const useLightStore = create<LightState>((set,get)=>({
     if (publish) require('../mqtt/client').publishSet({ brightness: val });
   },
 
-  setCct: (k, publish) => {
+  setColorTemperature: (k, publish) => {
     const val = Math.round(clamp(k,2700,6500));
-    set({ cct: val, mode: 'white' });
-    if (publish) require('../mqtt/client').publishSet({ mode:'white', cct: val });
+    set({ colorTemperature: val, mode: 'white' });
+    if (publish) require('../mqtt/client').publishSet({ mode:'white', colorTemperature: val });
   },
 
   setColorHSV: (h,s,v, publish) => {
-    const color = { h, s:clamp(s,0,1), v:clamp(v,0,1) };
-    set({ color, mode: 'rgb' });
-    if (publish) require('../mqtt/client').publishSet({ mode:'rgb', color });
+    const colorHSV = { h, s:clamp(s,0,1), v:clamp(v,0,1) };
+    set({ colorHSV, mode: 'rgb' });
+    if (publish) require('../mqtt/client').publishSet({ mode:'rgb', colorHSV });
   },
 
   setMode: (m, publish) => {

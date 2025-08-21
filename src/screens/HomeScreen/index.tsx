@@ -1,13 +1,35 @@
 import { StyleSheet, Text, View } from 'react-native'
 import { useLightStore } from '../../store/lightStored';
-import BrightnessSlider from '../../components/BrightnessSlider';
-import CctSlider from '../../components/CctSlider';
+import { CTTSlider } from '../../components/CTTSlider';
 import { LinearGradient } from 'react-native-linear-gradient';
 import { Header } from './header';
+import PagerView from 'react-native-pager-view';
+import React, { useEffect, useRef, useState } from 'react';
 
 export function HomeScreen() {
     const mode = useLightStore((state) => state.mode);
     const on = useLightStore((state) => state.on);
+    const setMode = useLightStore((state) => state.setMode);
+
+    const pagerRef = useRef<PagerView>(null);
+    const [page, setPage] = useState<number>(mode === 'rgb' ? 1 : 0);
+
+    // Khi đổi page -> cập nhật mode
+    const handleSelectPage = (index: number) => {
+        setPage(index);
+        if (pagerRef.current) pagerRef.current.setPage(index);
+        if (index === 0) setMode('white', false);
+        if (index === 1) setMode('rgb', false);
+    };
+
+    // Khi mode trong store đổi -> cập nhật pager
+    useEffect(() => {
+        const idx = mode === 'rgb' ? 1 : 0;
+        if (idx !== page) {
+            setPage(idx);
+            if (pagerRef.current) pagerRef.current.setPage(idx);
+        }
+    }, [mode, page]);
 
     return (
         <>
@@ -18,24 +40,37 @@ export function HomeScreen() {
                 start={{ x: 1, y: 0 }}
                 end={{ x: 0, y: 1 }}
             >
-                {/* Main Content */}
                 <View>
                     {on ? (
                         <>
-                            <View style={styles.brightnessContainer}>
-                                <BrightnessSlider />
+                            {/* Tabs */}
+                            <View style={styles.tabsContainer}>
+                                <TabPill label="Nhiệt độ màu" active={page === 0} onPress={() => handleSelectPage(0)} />
+                                <TabPill label="Màu sắc" active={page === 1} onPress={() => handleSelectPage(1)} />
                             </View>
 
-                            {mode === 'white' ? (
-                                <View style={styles.cctContainer}>
-                                    <Text style={styles.cctTitle}>Nhiệt độ màu</Text>
-                                    <CctSlider />
+                            {/* Pager */}
+                            <PagerView
+                                ref={pagerRef}
+                                style={styles.pager}
+                                initialPage={page}
+                                onPageSelected={(e) => handleSelectPage(e.nativeEvent.position)}
+                            >
+                                {/* Page 0: Nhiệt độ màu */}
+                                <View key="ctt" style={styles.page}>
+                                    <View style={styles.cctContainer}>
+                                        <CTTSlider />
+                                    </View>
                                 </View>
-                            ) : (
-                                <View style={styles.colorContainer}>
-                                    <Text style={styles.colorTitle}>Chọn màu</Text>
+
+                                {/* Page 1: Màu sắc */}
+                                <View key="color" style={styles.page}>
+                                    <View style={styles.colorContainer}>
+                                        <Text style={styles.colorTitle}>Màu sắc</Text>
+                                        {/* TODO: Thay thế bằng Color Wheel sau */}
+                                    </View>
                                 </View>
-                            )}
+                            </PagerView>
                         </>
                     ) : (
                         <View style={styles.offContainer}>
@@ -46,6 +81,14 @@ export function HomeScreen() {
             </LinearGradient>
         </>
     )
+}
+
+function TabPill({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+    return (
+        <Text onPress={onPress} style={[styles.tabPill, active ? styles.tabPillActive : styles.tabPillInactive]}>
+            {label}
+        </Text>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -64,13 +107,33 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: 'white'
     },
-    brightnessContainer: {
-        alignItems: 'center',
-        marginBottom: 12,
+    tabsContainer: {
+        flexDirection: 'row',
+        gap: 8,
+        paddingVertical: 8,
     },
-    brightnessTitle: {
+    tabPill: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        overflow: 'hidden',
+        fontSize: 12,
+    },
+    tabPillActive: {
         color: 'white',
-        marginBottom: 8,
+        backgroundColor: '#18A4AB',
+        fontWeight: '600'
+    },
+    tabPillInactive: {
+        color: 'white',
+        backgroundColor: '#2C3E50'
+    },
+    pager: {
+        height: 560,
+        marginTop: 8,
+    },
+    page: {
+        flex: 1,
     },
     cctContainer: {
         alignItems: 'center',

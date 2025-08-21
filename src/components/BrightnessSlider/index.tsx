@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { useLightStore } from '../store/lightStored';
+import { useLightStore } from '../../store/lightStored';
 import Animated, { runOnJS, useAnimatedGestureHandler, useDerivedValue, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useMemo, useEffect } from 'react';
 import throttle from 'lodash.throttle';
@@ -10,7 +10,7 @@ const WIDTH = 390;
 const HEIGHT = 24;
 const R = 14;
 
-export default function BrightnessSlider() {
+export function BrightnessSlider() {
     const brightness = useLightStore((state) => state.brightness);
     const setBrightness = useLightStore((state) => state.setBrightness);
 
@@ -99,21 +99,6 @@ export default function BrightnessSlider() {
                             />
                         </RoundedRect>
 
-                        {/* Knob circle - với shadow để nổi bật */}
-                        {/* <Circle
-                            cx={knobX as unknown as number}
-                            cy={HEIGHT / 2}
-                            r={R}
-                            color="#00000020"
-                        /> */}
-
-                        {/* <Circle
-                            cx={knobX as unknown as number}
-                            cy={HEIGHT / 2}
-                            r={R}
-                            color="#FFFFFF"
-                        /> */}
-
                         {/* Knob inner circle */}
                         <Circle
                             cx={knobX as unknown as number}
@@ -131,7 +116,7 @@ export default function BrightnessSlider() {
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        marginVertical: 20,
+        marginTop: 20,
     },
     label: {
         color: 'white',
@@ -142,7 +127,6 @@ const styles = StyleSheet.create({
     sliderContainer: {
         width: WIDTH,
         height: HEIGHT,
-        marginBottom: 5,
     },
     canvas: {
         flex: 1,
