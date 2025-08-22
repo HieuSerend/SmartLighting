@@ -1,4 +1,6 @@
 import { StyleSheet, View } from "react-native";
+import { useMemo } from "react";
+import throttle from "lodash.throttle";
 import { useLightStore } from "store/lightStored";
 import Animated from "react-native-reanimated";
 import ColorPicker from "react-native-wheel-color-picker";
@@ -8,8 +10,17 @@ export function ColorSelection() {
   const setColorCode = useLightStore((state) => state.setColorCode);
   const on = useLightStore((state) => state.on);
 
+  // Tạo throttled function để publish MQTT
+  const publishThrottled = useMemo(() =>
+    throttle((color: string) => setColorCode(color, true), 60),
+    [setColorCode]
+  );
+
   const onColorChange = (color: string) => {
-    setColorCode(color);
+    setColorCode(color, false);
+
+    // Publish MQTT có throttle (chỉ gửi mỗi 60ms)
+    publishThrottled(color);
   };
 
   return (
