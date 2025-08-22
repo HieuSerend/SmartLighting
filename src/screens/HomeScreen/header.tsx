@@ -5,11 +5,10 @@ import { BrightnessSlider } from "../../components/BrightnessSlider";
 
 export function Header() {
     return <LinearGradient
-        colors={['#2E798C', '#0054B4']}
+        colors={['#002651', '#146585', '#038A83']}
         useAngle={true}
-        angle={45}
-        start={{ x: 1, y: 1 }}
-        end={{ x: 0, y: 0 }}
+        angle={12}
+        locations={[0.3, 0.7, 1]}
     >
         <View>
             <View style={styles.headerContainer}>
@@ -24,16 +23,13 @@ export function Header() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingHorizontal: 16,
-    },
     headerContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginVertical: 12,
         paddingHorizontal: 16,
+        paddingVertical: 12
     },
     headerTitle: {
         fontSize: 18,

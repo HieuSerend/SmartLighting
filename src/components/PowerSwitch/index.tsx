@@ -11,6 +11,8 @@ export function PowerSwitch() {
             <Switch
                 value={on}
                 onValueChange={(value) => setOn(value, true)}
+                trackColor={{ true: '#19C6D8', false: '#5F648B' }}
+                thumbColor={'#FDFDFD'}
             />
         </View>
     );

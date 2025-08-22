@@ -14,6 +14,7 @@ const K_MIN = 2700, K_MAX = 6500;
 export function CTTSlider() {
     const colorTemperature = useLightStore((state) => state.colorTemperature);
     const setColorTemperature = useLightStore((state) => state.setColorTemperature);
+    const on = useLightStore((state) => state.on);
 
     // Keep knob fully inside by reserving radius padding at both ends
     const minY = R / 2;
@@ -29,9 +30,12 @@ export function CTTSlider() {
 
     const onGesture = useAnimatedGestureHandler({
         onStart: (_, context: any) => {
+            if (!on) return;
             context.offsetY = y.value;
         },
         onActive: (event, context: any) => {
+            if (!on) return;
+
             let newY = context.offsetY + event.translationY;
             newY = Math.max(minY, Math.min(maxY, newY));
             y.value = newY;
@@ -50,8 +54,8 @@ export function CTTSlider() {
     const p2Right = useDerivedValue(() => vec(WIDTH, knobY.value));
 
     return (
-        <PanGestureHandler onGestureEvent={onGesture}>
-            <Animated.View style={{ width: WIDTH, height: HEIGHT }}>
+        <PanGestureHandler onGestureEvent={onGesture} enabled={on}>
+            <Animated.View style={styles.cttContainer}>
                 <Canvas style={styles.container}>
                     <RoundedRect x={0} y={0} width={WIDTH} height={HEIGHT} r={R}>
                         <LinearGradient
@@ -77,5 +81,9 @@ const styles = StyleSheet.create({
         backgroundColor: "transparent",
         borderWidth: 1,
         borderColor: "white",
+    },
+    cttContainer: {
+        width: WIDTH,
+        height: HEIGHT,
     }
 }); 

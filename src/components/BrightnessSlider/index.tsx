@@ -13,6 +13,7 @@ const R = 14;
 export function BrightnessSlider() {
     const brightness = useLightStore((state) => state.brightness);
     const setBrightness = useLightStore((state) => state.setBrightness);
+    const on = useLightStore((state) => state.on);
 
     // Tính toán vị trí x ban đầu dựa trên brightness
     const initialX = (brightness / 100) * (WIDTH - 2 * R) + R;
@@ -28,15 +29,18 @@ export function BrightnessSlider() {
 
     const onGesture = useAnimatedGestureHandler({
         onStart: (_, context: any) => {
+            if (!on) return;
             context.offsetX = x.value;
         },
         onActive: (event, context: any) => {
+            if (!on) return;
+
             // Tính toán vị trí mới
             let newX = context.offsetX + event.translationX;
 
             // Giới hạn circle không được vượt quá biên
             const minX = R; // Điểm đầu (0%)
-            const maxX = WIDTH - R; // Điểm cuối (100%)
+            const maxX = WIDTH; // Điểm cuối (100%)
 
             newX = Math.max(minX, Math.min(maxX, newX));
             x.value = newX;
@@ -53,9 +57,10 @@ export function BrightnessSlider() {
             }
         },
         onEnd: () => {
+            if (!on) return;
             // Đảm bảo vị trí cuối cùng nằm trong giới hạn
             const minX = R;
-            const maxX = WIDTH - R;
+            const maxX = WIDTH;
             if (x.value < minX) x.value = minX;
             if (x.value > maxX) x.value = maxX;
         }
@@ -65,22 +70,28 @@ export function BrightnessSlider() {
         // Đảm bảo giá trị hợp lệ
         const value = x.value;
         const minX = R;
-        const maxX = WIDTH - R;
+        const maxX = WIDTH;
         return Math.max(minX, Math.min(maxX, value));
     });
+
+    const colors = {
+        background: ['#5F648B', '#5F648B'],
+        active: ['#5F648B', '#ECEDF5'],
+        knob: '#FFFFFF',
+    }
 
     return (
         <Animated.View style={styles.container}>
 
-            <PanGestureHandler onGestureEvent={onGesture}>
-                <Animated.View style={styles.sliderContainer}>
+            <PanGestureHandler onGestureEvent={onGesture} enabled={on}>
+                <Animated.View style={[styles.sliderContainer, !on && styles.disabled]}>
                     <Canvas style={styles.canvas}>
                         {/* Background track - toàn bộ slider */}
-                        <RoundedRect x={0} y={0} width={WIDTH} height={HEIGHT} r={HEIGHT / 2}>
+                        <RoundedRect x={0} y={0} width={WIDTH - 1} height={HEIGHT} r={HEIGHT / 2}>
                             <LinearGradient
                                 start={vec(0, 0)}
                                 end={vec(WIDTH, 0)}
-                                colors={['#5F648B', '#5F648B']}
+                                colors={colors.background}
                             />
                         </RoundedRect>
 
@@ -95,17 +106,17 @@ export function BrightnessSlider() {
                             <LinearGradient
                                 start={vec(0, 0)}
                                 end={vec(WIDTH, 0)}
-                                colors={['#5F648B', '#ECEDF5']}
+                                colors={colors.active}
                             />
                         </RoundedRect>
 
-                        {/* Knob inner circle */}
+                        {/* Knob inner circle
                         <Circle
-                            cx={knobX as unknown as number}
+                            cx={knobX as unknown as number - 0.5}
                             cy={HEIGHT / 2}
-                            r={R}
-                            color="#FFFFFF"
-                        />
+                            r={HEIGHT / 2}
+                            color={colors.knob}
+                        /> */}
                     </Canvas>
                 </Animated.View>
             </PanGestureHandler>
@@ -117,6 +128,9 @@ const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
         marginTop: 20,
+    },
+    disabled: {
+        opacity: 0.5,
     },
     label: {
         color: 'white',
