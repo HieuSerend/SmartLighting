@@ -1,8 +1,8 @@
-import Animated, { runOnJS, useAnimatedGestureHandler, useDerivedValue, useSharedValue } from "react-native-reanimated";
+import Animated, { runOnJS, useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { useLightStore } from "../../store/lightStored";
 import { useMemo } from "react";
 import throttle from "lodash.throttle";
-import { PanGestureHandler } from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Canvas, Circle, Line, LinearGradient, RoundedRect, vec } from "@shopify/react-native-skia";
 import { StyleSheet } from "react-native";
 
@@ -25,25 +25,25 @@ export function CTTSlider() {
     const cctToY = (k: number) => minY + (Math.max(K_MIN, Math.min(K_MAX, k)) - K_MIN) * visibleRange / (K_MAX - K_MIN);
 
     const y = useSharedValue(cctToY(colorTemperature));
+    const startY = useSharedValue(y.value);
 
     const publishThrottled = useMemo(() => throttle((k: number) => setColorTemperature(k, true), 60), [setColorTemperature]);
 
-    const onGesture = useAnimatedGestureHandler({
-        onStart: (_, context: any) => {
-            if (!on) return;
-            context.offsetY = y.value;
-        },
-        onActive: (event, context: any) => {
+    const onGesture = Gesture.Pan()
+        .enabled(on)
+        .onStart(() => {
+            startY.value = y.value;
+        })
+        .onUpdate((event) => {
             if (!on) return;
 
-            let newY = context.offsetY + event.translationY;
+            let newY = startY.value + event.translationY;
             newY = Math.max(minY, Math.min(maxY, newY));
             y.value = newY;
             const val = Math.round(K_MIN + (K_MAX - K_MIN) * (newY - minY) / visibleRange);
             runOnJS(setColorTemperature)(val, false);
             runOnJS(publishThrottled)(val);
-        }
-    })
+        })
 
     const knobY = useDerivedValue(() => y.value);
 
@@ -54,7 +54,7 @@ export function CTTSlider() {
     const p2Right = useDerivedValue(() => vec(WIDTH, knobY.value));
 
     return (
-        <PanGestureHandler onGestureEvent={onGesture} enabled={on}>
+        <GestureDetector gesture={onGesture}>
             <Animated.View style={styles.cttContainer}>
                 <Canvas style={styles.container}>
                     <RoundedRect x={0} y={0} width={WIDTH} height={HEIGHT} r={R}>
@@ -69,7 +69,7 @@ export function CTTSlider() {
                     <Line p1={p1Right} p2={p2Right} strokeWidth={1} style="stroke" />
                 </Canvas>
             </Animated.View>
-        </PanGestureHandler>
+        </GestureDetector>
     )
 }
 
